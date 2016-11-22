@@ -4,12 +4,13 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
+var session = require('express-session');
 var methodOverride = require('method-override');
+var flash = require('connect-flash');
+var mongoose   = require('mongoose');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
-var mongoose   = require('mongoose');
 
 var app = express();
 
@@ -27,6 +28,22 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(session({
+  resave: true,
+  saveUninitialized: true,
+  secret: 'long-long-long-secret-string-1313513tefgwdsvbjkvasd'
+}));
+app.use(flash());
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/bower_components',  express.static(path.join(__dirname, '/bower_components')));
+
+app.use(function(req, res, next) {
+  res.locals.currentUser = req.session.user;
+  res.locals.flashMessages = req.flash();
+  next();
+});
 
 app.use('/', index);
 app.use('/users', users);
